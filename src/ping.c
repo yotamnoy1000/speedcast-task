@@ -1356,27 +1356,8 @@ void usage(void)
 {
 	fprintf(stderr,
 		"Usage: ping"
-		" [-"
-			"aAbBdDfhLnOqrRUvV"
-		"]"
 		" [-c count 2 - 50]"
 		" [-i interval 0.1ms - 10ms]"
-		" [-I interface]"
-		USAGE_NEWLINE
-		" [-m mark]"
-		" [-M pmtudisc_option]"
-		" [-l preload]"
-		" [-p pattern]"
-		" [-Q tos]"
-		USAGE_NEWLINE
-		" [-s packetsize]"
-		" [-S sndbuf]"
-		" [-t ttl]"
-		" [-T timestamp_option]"
-		USAGE_NEWLINE
-		" [-w deadline]"
-		" [-W timeout]"
-		" [hop1 ...] destination"
 		"\n"
 	);
 	exit(2);
