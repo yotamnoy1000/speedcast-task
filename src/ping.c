@@ -58,6 +58,7 @@ char copyright[] =
  *	This program has to run SUID to ROOT to access the ICMP socket.
  */
 
+#include <math.h>
 #include "ping_common.h"
 
 #include <netinet/ip.h>
@@ -115,9 +116,22 @@ struct sockaddr_in source;
 char *device;
 int pmtudisc = -1;
 
+//adv_ping statistics helper:
+struct advanced_statistics adv_statistics =
+{
+	.avarage_latency = 0,
+	.avarage_jitter = 0,
+	.result_number = 0
+};
 
-int
-c_main(int argc, char **argv)
+struct advanced_statistics_helper adv_statistics_helper =
+{
+	.latency = {0},
+	.jitter = {0},
+	.result_number = 0
+};
+
+struct advanced_statistics c_main(int argc, char **argv)
 {
 	struct hostent *hp;
 	int ch, hold, packlen;
@@ -149,83 +163,6 @@ c_main(int argc, char **argv)
 	preload = 1;
 	while ((ch = getopt(argc, argv, COMMON_OPTSTR "bRT:")) != EOF) {
 		switch(ch) {
-		case 'b':
-			broadcast_pings = 1;
-			break;
-		case 'Q':
-			settos = parsetos(optarg);
-			if (settos &&
-			    (setsockopt(icmp_sock, IPPROTO_IP, IP_TOS,
-					(char *)&settos, sizeof(int)) < 0)) {
-				perror("ping: error setting QOS sockopts");
-				exit(2);
-			}
-			break;
-		case 'R':
-			if (options & F_TIMESTAMP) {
-				fprintf(stderr, "Only one of -T or -R may be used\n");
-				exit(2);
-			}
-			options |= F_RROUTE;
-			break;
-		case 'T':
-			if (options & F_RROUTE) {
-				fprintf(stderr, "Only one of -T or -R may be used\n");
-				exit(2);
-			}
-			options |= F_TIMESTAMP;
-			if (strcmp(optarg, "tsonly") == 0)
-				ts_type = IPOPT_TS_TSONLY;
-			else if (strcmp(optarg, "tsandaddr") == 0)
-				ts_type = IPOPT_TS_TSANDADDR;
-			else if (strcmp(optarg, "tsprespec") == 0)
-				ts_type = IPOPT_TS_PRESPEC;
-			else {
-				fprintf(stderr, "Invalid timestamp type\n");
-				exit(2);
-			}
-			break;
-		case 'I':
-		{
-#if 0
-			char dummy;
-			int i1, i2, i3, i4;
-
-			if (sscanf(optarg, "%u.%u.%u.%u%c",
-				   &i1, &i2, &i3, &i4, &dummy) == 4) {
-				__u8 *ptr;
-				ptr = (__u8*)&source.sin_addr;
-				ptr[0] = i1;
-				ptr[1] = i2;
-				ptr[2] = i3;
-				ptr[3] = i4;
-				options |= F_STRICTSOURCE;
-			} else {
-				device = optarg;
-			}
-#else
-			if (inet_pton(AF_INET, optarg, &source.sin_addr) > 0)
-				options |= F_STRICTSOURCE;
-			else
-				device = optarg;
-#endif
-			break;
-		}
-		case 'M':
-			if (strcmp(optarg, "do") == 0)
-				pmtudisc = IP_PMTUDISC_DO;
-			else if (strcmp(optarg, "dont") == 0)
-				pmtudisc = IP_PMTUDISC_DONT;
-			else if (strcmp(optarg, "want") == 0)
-				pmtudisc = IP_PMTUDISC_WANT;
-			else {
-				fprintf(stderr, "ping: wrong value for -M: do, dont, want are valid ones.\n");
-				exit(2);
-			}
-			break;
-		case 'V':
-			printf("ping utility, iputils-%s\n", SNAPSHOT);
-			exit(0);
 		COMMON_OPTIONS
 			common_options(ch);
 			break;
@@ -587,7 +524,7 @@ c_main(int argc, char **argv)
 
 	setup(icmp_sock);
 
-	main_loop(icmp_sock, packet, packlen);
+	return main_loop(icmp_sock, packet, packlen);
 }
 
 
@@ -875,6 +812,9 @@ parse_reply(struct msghdr *msg, int cc, void *addr, struct timeval *tv)
 		pr_icmph(icp->type, icp->code, ntohl(icp->un.gateway), icp);
 		return 0;
 	}
+
+	adv_statistics_helper.latency[adv_statistics_helper.result_number] = (tv->tv_usec);
+	adv_statistics_helper.result_number++;
 
 	if (!(options & F_FLOOD)) {
 		pr_options(buf + sizeof(struct iphdr), hlen);

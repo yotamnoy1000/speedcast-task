@@ -244,27 +244,21 @@ static void fill(char *patp)
 void common_options(int ch)
 {
 	switch(ch) {
-	case 'a':
-		options |= F_AUDIBLE;
-		break;
-	case 'A':
-		options |= F_ADAPTIVE;
-		break;
-	case 'c':
-		npackets = atoi(optarg);
-		if (npackets <= 0) {
+		case 'c':
+			npackets = atoi(optarg);
+		if (npackets < 2 || npackets > 50)
+		{
 			fprintf(stderr, "ping: bad number of packets to transmit.\n");
 			exit(2);
 		}
 		break;
-	case 'd':
-		options |= F_SO_DEBUG;
-		break;
-	case 'D':
-		options |= F_PTIMEOFDAY;
-		break;
 	case 'i':		/* wait between sending packets */
 	{
+		if (npackets == 0) {
+			fprintf(stderr, "ping: missing count before interval\n");
+			exit(2);
+		}
+
 		double dbl;
 		char *ep;
 
@@ -282,107 +276,6 @@ void common_options(int ch)
 		options |= F_INTERVAL;
 		break;
 	}
-	case 'm':
-	{
-		char *endp;
-		mark = (int)strtoul(optarg, &endp, 10);
-		if (mark < 0 || *endp != '\0') {
-			fprintf(stderr, "mark cannot be negative\n");
-			exit(2);
-		}
-		options |= F_MARK;
-		break;
-	}
-	case 'w':
-		deadline = atoi(optarg);
-		if (deadline < 0) {
-			fprintf(stderr, "ping: bad wait time.\n");
-			exit(2);
-		}
-		break;
-	case 'l':
-		preload = atoi(optarg);
-		if (preload <= 0) {
-			fprintf(stderr, "ping: bad preload value, should be 1..%d\n", MAX_DUP_CHK);
-			exit(2);
-		}
-		if (preload > MAX_DUP_CHK)
-			preload = MAX_DUP_CHK;
-		if (uid && preload > 3) {
-			fprintf(stderr, "ping: cannot set preload to value > 3\n");
-			exit(2);
-		}
-		break;
-	case 'O':
-		options |= F_OUTSTANDING;
-		break;
-	case 'S':
-		sndbuf = atoi(optarg);
-		if (sndbuf <= 0) {
-			fprintf(stderr, "ping: bad sndbuf value.\n");
-			exit(2);
-		}
-		break;
-	case 'f':
-		options |= F_FLOOD;
-		setbuf(stdout, (char *)NULL);
-		/* fallthrough to numeric - avoid gethostbyaddr during flood */
-	case 'n':
-		options |= F_NUMERIC;
-		break;
-	case 'p':		/* fill buffer with user pattern */
-		options |= F_PINGFILLED;
-		fill(optarg);
-		break;
-	case 'q':
-		options |= F_QUIET;
-		break;
-	case 'r':
-		options |= F_SO_DONTROUTE;
-		break;
-	case 's':		/* size of packet to send */
-		datalen = atoi(optarg);
-		if (datalen < 0) {
-			fprintf(stderr, "ping: illegal negative packet size %d.\n", datalen);
-			exit(2);
-		}
-		if (datalen > maxpacket - 8) {
-			fprintf(stderr, "ping: packet size too large: %d\n",
-				datalen);
-			exit(2);
-		}
-		break;
-	case 'v':
-		options |= F_VERBOSE;
-		break;
-	case 'L':
-		options |= F_NOLOOP;
-		break;
-	case 't':
-		options |= F_TTL;
-		ttl = atoi(optarg);
-		if (ttl < 0 || ttl > 255) {
-			fprintf(stderr, "ping: ttl %u out of range\n", ttl);
-			exit(2);
-		}
-		break;
-	case 'U':
-		options |= F_LATENCY;
-		break;
-	case 'B':
-		options |= F_STRICTSOURCE;
-		break;
-	case 'W':
-		lingertime = atoi(optarg);
-		if (lingertime < 0 || lingertime > INT_MAX/1000000) {
-			fprintf(stderr, "ping: bad linger time.\n");
-			exit(2);
-		}
-		lingertime *= 1000;
-		break;
-	case 'V':
-		printf("ping utility, iputils-%s\n", SNAPSHOT);
-		exit(0);
 	default:
 		abort();
 	}
@@ -708,7 +601,7 @@ void setup(int icmp_sock)
 	}
 }
 
-void main_loop(int icmp_sock, __u8 *packet, int packlen)
+struct advanced_statistics main_loop(int icmp_sock, __u8 *packet, int packlen)
 {
 	char addrbuf[128];
 	char ans_data[4096];
@@ -849,7 +742,7 @@ void main_loop(int icmp_sock, __u8 *packet, int packlen)
 			 * and return to pinger. */
 		}
 	}
-	finish();
+	return finish();
 }
 
 int gather_statistics(__u8 *icmph, int icmplen,
@@ -992,7 +885,7 @@ static long llsqrt(long long a)
  * finish --
  *	Print out statistics, and give up.
  */
-void finish(void)
+struct advanced_statistics finish(void)
 {
 	struct timeval tv = cur_time;
 	char *comma = "";
@@ -1042,8 +935,22 @@ void finish(void)
 		printf("%sipg/ewma %d.%03d/%d.%03d ms",
 		       comma, ipg/1000, ipg%1000, rtt/8000, (rtt/8)%1000);
 	}
+	adv_statistics.result_number = adv_statistics_helper.result_number;
+	for (int i = 0; i < adv_statistics_helper.result_number; i++ )
+	{
+		adv_statistics_helper.jitter[i] = abs(adv_statistics_helper.latency[i] - adv_statistics_helper.latency[i +1]);
+		adv_statistics.avarage_latency += (adv_statistics_helper.latency[i]);
+	}
+	adv_statistics.avarage_latency = (adv_statistics.avarage_latency) / (adv_statistics.result_number +1) / (1000);
+	for (int i = 0; i < adv_statistics.result_number -1 ; i++)
+	{
+		adv_statistics.avarage_jitter += (adv_statistics_helper.jitter[i]);
+	}
+	adv_statistics.avarage_jitter = (adv_statistics.avarage_jitter) / (adv_statistics.result_number - 1) / (1000);
+
 	putchar('\n');
-	exit(!nreceived || (deadline && nreceived < npackets));
+	return adv_statistics;
+	//exit(!nreceived || (deadline && nreceived < npackets));
 }
 
 

@@ -1,9 +1,10 @@
 #include <iostream>
+#include <iomanip>
 #include "ping_common.h"
 
 extern "C" {
     // Declare the c_main function from ping.c
-    int c_main(int argc, char** argv);
+    advanced_statistics c_main(int argc, char** argv);
 }
 
 int main(int argc, char** argv) {
@@ -11,13 +12,11 @@ int main(int argc, char** argv) {
     std::cout << "Calling c_main from C++ wrapper...\n";
 
     // Pass the command-line arguments directly to c_main
-    int result = c_main(argc, argv);
+    auto result = c_main(argc, argv);
 
-    // Handle the return value or errors
-    if (result != 0) {
-        std::cerr << "c_main returned an error: " << result << "\n";
-        return result;
-    }
+    std::cout << std::fixed << std::setprecision(2);
+    std::cout << "result number: " << result.result_number <<" average latency: " << result.avarage_latency << "ms, average jitter: " << result.avarage_jitter <<" ms"<< std::endl;
+
 
     std::cout << "c_main executed successfully.\n";
     return 0;

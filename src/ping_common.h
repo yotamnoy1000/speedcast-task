@@ -103,6 +103,35 @@ struct rcvd_table {
 	bitmap_t bitmap[MAX_DUP_CHK / (sizeof(bitmap_t) * 8)];
 };
 
+//adv_ping statistics helper:
+struct advanced_statistics{
+	float avarage_latency;
+	float avarage_jitter;
+	unsigned int result_number;
+};
+
+//adv_ping statistics helper:
+extern struct advanced_statistics adv_statistics; //=
+// {
+// 	.avarage_latency = 0,
+// 	.avarage_jitter = 0,
+// 	.result_number = 0
+// };
+
+//adv_ping statistics helper:
+struct advanced_statistics_helper {
+	float latency[50];
+	float jitter[50];
+	unsigned int result_number;
+};
+
+extern struct advanced_statistics_helper adv_statistics_helper; //=
+// {
+// 	.latency = {0},
+// 	.jitter = {0},
+// 	.result_number = 0
+// };
+
 extern struct rcvd_table rcvd_tbl;
 
 #define	A(bit)	(rcvd_tbl.bitmap[(bit) >> BITMAP_SHIFT])	/* identify word in array */
@@ -285,8 +314,8 @@ extern void install_filter(void);
 extern int pinger(void);
 extern void sock_setbufs(int icmp_sock, int alloc);
 extern void setup(int icmp_sock);
-extern void main_loop(int icmp_sock, __u8 *buf, int buflen) __attribute__((noreturn));
-extern void finish(void) __attribute__((noreturn));
+extern struct advanced_statistics main_loop(int icmp_sock, __u8 *buf, int buflen);
+extern struct advanced_statistics finish(void);
 extern void status(void);
 extern void common_options(int ch);
 extern int gather_statistics(__u8 *ptr, int icmplen,
