@@ -35,21 +35,23 @@ The only accepted command line parameters are
 
 ## Build and Use project
 ### setup environment
-1. download git: sudo apt-get install git.
-2. clone the project from github: git clone git@github.com:yotamnoy1000/speedcast-task.git
-3. download cpp development essentials: sudo apt-get update && sudo apt-get install build-essential
-4. install python3: sudo apt-get install python3.
-5. install cmake: sudo apt-get install cmake.
+1. install git: `sudo apt-get install git`.
+2. clone the project from github: `git clone git@github.com:yotamnoy1000/speedcast-task.git`
+    * it's also possible to download zip and extract
+3. install cpp development essentials: `sudo apt-get update && sudo apt-get install build-essential`
+4. install python3: `sudo apt-get install python3`.
+5. install cmake: `sudo apt-get install cmake`.
 
 ### building the project
-1. ~/speedcast-task$ mkdir build
-2. ~/speedcast-task$ cd build
-3. ~/speedcast-task/build$ cmake..
-3. ~/speedcast-task/build$ make.
+1. ~/$ `cd speedcast-task`
+2. ~/speedcast-task$ `mkdir build`
+3. ~/speedcast-task$ `cd build`
+4. ~/speedcast-task/build$ `cmake ..`
+5. ~/speedcast-task/build$ `make`
 
 ### using the project
 1. one way to use the project is to run the cpp project directly for a specific input:
-    * example: ~/speedcast-task/build$ sudo ./PingAdvance www.google.com -c 3 -i 0.1
+    * example: ~/speedcast-task/build$ `sudo ./PingAdvance www.google.com -c 3 -i 0.1`
 2. second way in using the python script, then will run the cpp project multiple time and gather the data:
-    * example: ~/speedcast-task$ ~/speedcast-task  
-    * when the python is done the json data will be located at ~/speedcast-task/captured_data.json
+    * example: ~/speedcast-task$ `sudo python3 adv_ping.py www.google.com`  
+    * when the python script is done the json data will be located at ~/speedcast-task/captured_data.json
