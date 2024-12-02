@@ -28,3 +28,28 @@ The only accepted command line parameters are
       determine a failing connection before trying all packets [for example
       the lower of 5 or half of the total requested packets]
 
+## python app
+* The python app is using the adv_ping cpp, as a CLI, to Continuously measure ping average latency and jitter according to different inputs(packet count and interval between packets).
+* The python keep each and every run of the adv_ping, and accumulate it.
+* This data is gathered in memory as a json, in the end a json file is created.
+
+## Build and Use project
+### setup environment
+1. download git: apt install git.
+2. clone the project from github: git clone git@github.com:yotamnoy1000/speedcast-task.git
+3. download cpp development essentials: sudo apt-get update && sudo apt-get install build-essential
+4. install python3: apt-get install python3.
+5. install cmake: apt-get install cmake.
+
+### building the project
+1. ~/speedcast-task$ mkdir build
+2. ~/speedcast-task$ cd build
+3. ~/speedcast-task/build$ cmake..
+3. ~/speedcast-task/build$ make.
+
+### using the project
+1. one way to use the project is to run the cpp project directly for a specific input:
+    * example: ~/speedcast-task/build$ sudo PingAdvanced www.google.com -c 3 -i 0.1
+2. second way in using the python script, then will run the cpp project multiple time and gather the data:
+    * example: ~/speedcast-task$ ~/speedcast-task  
+    * when the python is done the json data will be located at ~/speedcast-task/captured_data.json

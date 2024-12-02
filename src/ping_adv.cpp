@@ -22,9 +22,6 @@ int main(int argc, char** argv) {
     // Example of C++ pre-processing or argument manipulation
     std::cout << "Calling c_main from C++ wrapper...\n";
 
-    // Namespace alias for convenience
-    namespace fs = std::filesystem;
-
     // Pass the command-line arguments directly to c_main
     auto result = c_main(argc, argv);
 
