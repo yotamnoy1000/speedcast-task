@@ -2,3 +2,4 @@
 build/
 data/
 cmake-build-debug/
+captured_data.json

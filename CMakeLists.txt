@@ -5,11 +5,11 @@ project(PingAdvance LANGUAGES C CXX)
 
 # Add source files
 set(SRC_FILES
-        src/ping.c
-        src/ping_common.c
-        src/ping_common.h
+        src/ping_c/ping.c
+        src/ping_c/ping_common.c
+        src/ping_c/ping_common.h
         src/ping_adv.cpp
-        src/SNAPSHOT.h
+        src/ping_c/SNAPSHOT.h
 )
 
 # Specify the executable target

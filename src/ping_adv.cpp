@@ -1,7 +1,7 @@
 #include <iostream>
 #include <iomanip>
 #include <fstream>
-#include "ping_common.h"
+#include "ping_c/ping_common.h"
 #include "json.hpp"
 
 extern "C" {

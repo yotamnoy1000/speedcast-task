@@ -941,7 +941,7 @@ struct advanced_statistics finish(void)
 		adv_statistics_helper.jitter[i] = abs(adv_statistics_helper.latency[i] - adv_statistics_helper.latency[i +1]);
 		adv_statistics.avarage_latency += (adv_statistics_helper.latency[i]);
 	}
-	adv_statistics.avarage_latency = (adv_statistics.avarage_latency) / (adv_statistics.result_number +1) / (1000);
+	adv_statistics.avarage_latency = (adv_statistics.avarage_latency) / (adv_statistics.result_number) / (1000);
 	for (int i = 0; i < adv_statistics.result_number -1 ; i++)
 	{
 		adv_statistics.avarage_jitter += (adv_statistics_helper.jitter[i]);
