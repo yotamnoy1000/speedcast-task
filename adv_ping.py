@@ -55,7 +55,7 @@ def call_and_listen_cpp(cli_app, args, json_key):
 
 if __name__ == "__main__":
     # Path to the C++ CLI application
-    cpp_app = "/home/yotam/workspace/speedcast-task/cmake-build-debug/PingAdvance"
+    cpp_app = "./build/PingAdvance"
 
     # Define the range of arguments
     packet_counts = range(2, 3)  # -c values from 2 to 50
